@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: goserver-service
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: goserver
   ports:
@@ -11,4 +11,3 @@ spec:
     port: 80
     targetPort: 8000
     protocol: TCP
-
