@@ -16,15 +16,25 @@ spec:
     spec:
       containers:
         - name: "goserver"
-          image: "luizgustavoou/hello-go:v5.3"
-          livenessProbe:
+          image: "luizgustavoou/hello-go:v5.4"
+          readinessProbe:
             httpGet:
               path: /healthz
               port: 8000
-            periodSeconds: 5 # A cada 5 segundos verifica a saúde
-            failureThreshold: 3 # Após 1 falha, o Pod será reiniciado
-            timeoutSeconds: 2 # Timeout de 2 segundos para a verificação
+            periodSeconds: 3 # A cada 3 segundos verifica a saúde
+            failureThreshold: 1 # Após 1 falha, o Pod será reiniciado
+            timeoutSeconds: 1 # Timeout de 1 segundo para a verificação
             successThreshold: 1 # Após 1 sucesso, o Pod é considerado saudável
+            initialDelaySeconds: 10 # Aguarda 10 segundos antes de iniciar as verificações
+          
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthz
+          #     port: 8000
+          #   periodSeconds: 5 # A cada 5 segundos verifica a saúde
+          #   failureThreshold: 3 # Após 1 falha, o Pod será reiniciado
+          #   timeoutSeconds: 2 # Timeout de 2 segundos para a verificação
+          #   successThreshold: 1 # Após 1 sucesso, o Pod é considerado saudável
 
           envFrom:
             - configMapRef:
