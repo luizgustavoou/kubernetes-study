@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: k6-load-test
+  namespace: default
+spec:
+  template:
+    spec:
+      serviceAccountName: default
+      containers:
+      - name: k6
+        image: grafana/k6:latest
+        args:
+          - run
+          - /scripts/loadtest-k6.js
+        volumeMounts:
+        - name: script-volume
+          mountPath: /scripts
+        env:
+        - name: K6_VUS
+          value: "70"
+        - name: K6_DURATION
+          value: "120s"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: script-volume
+        configMap:
+          name: k6-script
+      restartPolicy: Never
+  backoffLimit: 1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: k6-script
+  namespace: default
+data:
+  loadtest-k6.js: |
+    import http from 'k6/http';
+    import { check, sleep } from 'k6';
+
+    export const options = {
+      stages: [
+        { duration: '10s', target: 40 },
+        { duration: '100s', target: 40 },
+        { duration: '10s', target: 0 },
+      ],
+      
+      thresholds: {
+        'http_req_duration': ['p(95)<500', 'p(99)<1000'],
+        'http_req_failed': ['rate<0.1'],
+      },
+    };
+
+    export default function () {
+      const url = 'http://goserver-service/healthz';
+      
+      const response = http.get(url, {
+        timeout: '5s',
+      });
+      
+      check(response, {
+        'status é 200': (r) => r.status === 200,
+        'status é 500 ou 200 (durante inicialização)': (r) => r.status === 200 || r.status === 500,
+        'tempo resposta < 500ms': (r) => r.timings.duration < 500,
+        'resposta contém "up"': (r) => r.body.includes('up') || r.status !== 200,
+      });
+    }
