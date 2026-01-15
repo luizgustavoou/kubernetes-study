@@ -1,3 +1,6 @@
+###
+### Não é usado, apenas um exemplo de Persistent Volume
+###
 apiVersion: v1
 kind: PersistentVolume
 metadata:
