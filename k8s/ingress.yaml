@@ -3,16 +3,30 @@ kind: Ingress
 metadata:
   name: ingress-host
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: letsencrypt
+    ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   ingressClassName: nginx
   rules:
-    - http:
+    - host: fullcycle.duckdns.org
+      http:
         paths:
-          - path: /
+          - path: /nodered
+            pathType: Prefix 
+            backend:
+              service:
+                name: nodered-service
+                port:
+                  number: 80
+
+          - path: /goserver
             pathType: Prefix
             backend:
               service:
                 name: goserver-service
                 port:
                   number: 80
+  tls:
+    - hosts:
+        - fullcycle.duckdns.org
+      secretName: letsencrypt-tls
