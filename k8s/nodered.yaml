@@ -28,6 +28,14 @@ data:
       // Permitir servir arquivos estáticos corretamente
       // httpStatic: '/data/public',
 
+      adminAuth: {
+        type: "credentials",
+        users: [{
+          username: "admin",
+          password: "$2b$08$OvNjnbFgmafKTq26k2d./eKnXM.DtkP1aUt0Q8UoaoI2lBSGExAgy",
+          permissions: "*"
+        }]
+      },
       editorTheme: {
         page: {
           title: "Node-RED"
