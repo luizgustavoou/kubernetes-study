@@ -5,8 +5,15 @@ metadata:
   labels:
     app: kuar
 spec:
+  volumes:
+    - name: kuard-data
+      hostPath:
+        path: /var/lib/kuard
   containers:
     - name: kuar-container
+      volumeMounts:
+        - mountPath: /data
+          name: kuard-data
       image: luizgustavoou/kuard:latest
       livenessProbe:
         httpGet:
