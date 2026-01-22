@@ -1,44 +1,68 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: kuar-pod
+  name: kuar-deployment
   labels:
     app: kuar
 spec:
-  volumes:
-    - name: kuard-data
-      hostPath:
-        path: /var/lib/kuard
-  containers:
-    - name: kuar-container
-      volumeMounts:
-        - mountPath: /data
-          name: kuard-data
-      image: luizgustavoou/kuard:latest
-      livenessProbe:
-        httpGet:
-          path: /healthy
-          port: 8080
-        initialDelaySeconds: 5
-        timeoutSeconds: 1
-        periodSeconds: 10
-        failureThreshold: 3
-      readinessProbe:
-        httpGet:
-          path: /ready
-          port: 8080
-        initialDelaySeconds: 30
-        timeoutSeconds: 1
-        periodSeconds: 10
-        failureThreshold: 3
-      resources:
-        requests:
-          cpu: 500m
-          memory: 128Mi
-        limits:
-          cpu: 1000m
-          memory: 256Mi
-      ports:
-        - containerPort: 8080
-          name: http
-          protocol: TCP
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kuar
+  template:
+    metadata:
+      labels:
+        app: kuar
+    spec:
+      # volumes:
+      #   - name: kuard-data
+      #     hostPath:
+            # path: /var/lib/kuard
+      containers:
+        - name: kuar-container
+          image: luizgustavoou/kuard:latest
+          # volumeMounts:
+          #   - mountPath: /data
+          #     name: kuard-data
+          ports:
+            - containerPort: 8080
+              name: http
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthy
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 0
+            timeoutSeconds: 1
+            periodSeconds: 2
+            failureThreshold: 3
+            successThreshold: 1
+          resources:
+            requests:
+              cpu: 500m
+              memory: 128Mi
+            limits:
+              cpu: 1000m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kuar-service
+spec:
+  type: ClusterIP
+  selector:
+    app: kuar
+  ports:
+    - name: kuar-service
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

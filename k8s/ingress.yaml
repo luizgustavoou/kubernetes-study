@@ -26,6 +26,17 @@ spec:
                 name: goserver-service
                 port:
                   number: 80
+    - host: alpaca.example.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: goserver-service
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+        
   tls:
     - hosts:
         - fullcycle.duckdns.org
