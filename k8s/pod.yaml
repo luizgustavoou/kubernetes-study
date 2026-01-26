@@ -8,4 +8,5 @@ spec:
   containers:
     - name: "goserver"
       image: "luizgustavoou/hello-go:latest"
+      
   
