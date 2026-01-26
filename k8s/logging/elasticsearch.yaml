@@ -52,3 +52,15 @@ spec:
           volumeMounts:
             - mountPath: /usr/share/elasticsearch/data
               name: elasticsearch-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-h
+  namespace: logging
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+    - port: 9200
+  clusterIP: None

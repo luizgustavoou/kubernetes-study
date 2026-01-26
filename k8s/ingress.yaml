@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: fullcycle.duckdns.org
+    - host: umbelino.duckdns.org
       http:
         paths:
           - path: /nodered
@@ -26,7 +26,7 @@ spec:
                 name: goserver-service
                 port:
                   number: 80
-                  
+
           - path: /kibana
             pathType: Prefix
             backend:
@@ -47,5 +47,5 @@ spec:
         
   tls:
     - hosts:
-        - fullcycle.duckdns.org
+        - umbelino.duckdns.org
       secretName: letsencrypt-tls
