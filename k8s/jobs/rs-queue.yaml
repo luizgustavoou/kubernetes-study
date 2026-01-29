@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: queue
+  labels:
+    app: work-queue
+    component: queue
+    chapter: jobs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: work-queue
+      component: queue
+      chapter: jobs
+  template:
+    metadata:
+      labels:
+        app: work-queue
+        component: queue
+        chapter: jobs
+    spec:
+      containers:
+        - name: queue
+          image: luizgustavoou/kuard:latest
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue
+  labels:
+    app: work-queue
+    component: queue
+    chapter: jobs
+spec:
+  selector:
+    app: work-queue
+    component: queue
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
