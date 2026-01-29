@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nodered-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nodered-settings
+data:
+  settings.js: |
+    module.exports = {
+      // Base path do Node-RED (editor + http endpoints)
+      httpRoot: "/nodered",
+
+      // (opcional) se quiser expor apenas o editor em /nodered
+      // httpAdminRoot: "/nodered",
+
+      // Porta padrão do Node-RED
+      uiPort: process.env.PORT || 1880,
+
+      // Permitir servir arquivos estáticos corretamente
+      // httpStatic: '/data/public',
+      editorTheme: {
+        page: {
+          title: "Node-RED"
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodered-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodered
+  template:
+    metadata:
+      labels:
+        app: nodered
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsNonRoot: true
+      initContainers:
+        - name: copy-flows
+          image: luizgustavoou/teste-node-red:v1
+          command: ['sh', '-c', 'if [ ! -f /data/flows.json ]; then cp /data-image/flows.json /data/flows.json; fi']
+          volumeMounts:
+            - name: nodered-storage
+              mountPath: /data
+      containers:
+        - name: nodered
+          imagePullPolicy: Always
+          image: luizgustavoou/teste-node-red:v1
+          env:
+            - name: NODE_RED_ENABLE_PROJECTS
+              value: "false"
+          resources:
+            requests:
+              memory: 128Mi
+            limits:
+              memory: 256Mi
+          ports:
+            - containerPort: 1880
+          volumeMounts:
+            - name: nodered-storage
+              mountPath: /data
+            - name: nodered-settings
+              mountPath: /data/settings.js
+              subPath: settings.js
+      volumes:
+        - name: nodered-storage
+          persistentVolumeClaim:
+            claimName: nodered-pvc
+        - name: nodered-settings
+          configMap:
+            name: nodered-settings
+        
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodered-service
+spec:
+  type: ClusterIP
+  selector:
+    app: nodered
+  ports:
+    - port: 80
+      targetPort: 1880
+      protocol: TCP

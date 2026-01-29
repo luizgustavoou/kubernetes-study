@@ -1,0 +1,342 @@
+[
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "5262f8dc212c0e9d",
+        "type": "subflow",
+        "name": "Dicionario",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 60,
+                "y": 160,
+                "wires": [
+                    {
+                        "id": "ab1e0f2980e2e4ae"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 880,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "295b1191bba19fd3",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [],
+        "meta": {},
+        "color": "#DDAA99"
+    },
+    {
+        "id": "7434bd72.4c5b14",
+        "type": "tls-config",
+        "name": "NO Cert Check",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "",
+        "keyname": "",
+        "caname": "",
+        "verifyservercert": false
+    },
+    {
+        "id": "ab1e0f2980e2e4ae",
+        "type": "function",
+        "z": "5262f8dc212c0e9d",
+        "name": "Montar requisicao",
+        "func": "const palavra = msg.palavra\n\nif(!palavra) {\n    return null\n}\n\nconst url = `https://www.dicio.com.br/${palavra}/`;\n\nmsg.url = url\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 230,
+        "y": 160,
+        "wires": [
+            [
+                "527c8d83695ad0b3"
+            ]
+        ]
+    },
+    {
+        "id": "527c8d83695ad0b3",
+        "type": "http request",
+        "z": "5262f8dc212c0e9d",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "text/html",
+                "valueValue": ""
+            }
+        ],
+        "x": 290,
+        "y": 80,
+        "wires": [
+            [
+                "295b1191bba19fd3"
+            ]
+        ]
+    },
+    {
+        "id": "295b1191bba19fd3",
+        "type": "function",
+        "z": "5262f8dc212c0e9d",
+        "name": "Scraping com cheerio",
+        "func": "const cheerio = global.get('cheerio');\n\nconst $ = cheerio.load(msg.payload);\n\nlet exemplos = [];\n\nconst significados = {}\nlet atual = null\n\n// Percorre todos os <span> que não são da classe 'cl' nem 'tag' ou 'etim'\n$('p.significado span').each((i, el) => {\n    const span = $(el);\n\n    // Ignora spans de classe 'cl', 'tag', 'etim'\n\n    if (span.hasClass('cl')) {\n        atual = span.text()\n        significados[atual] = []\n    }\n\n\n\n    if (span.hasClass('cl') || span.hasClass('tag') || span.hasClass('etim')) {\n        return\n    }\n\n    if (!atual) {\n        return\n    }\n\n    significados[atual].push(span.text().trim());\n});\n\nmsg.payload = significados\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 520,
+        "y": 80,
+        "wires": [
+            [
+                "3346e0ade624dfe4"
+            ]
+        ]
+    },
+    {
+        "id": "3346e0ade624dfe4",
+        "type": "debug",
+        "z": "5262f8dc212c0e9d",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "22cb05521073c1aa",
+        "type": "http in",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "url": "/dicionario/:palavra",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 120,
+        "y": 60,
+        "wires": [
+            [
+                "f8e4562380da1207",
+                "63027884ae568a6c"
+            ]
+        ]
+    },
+    {
+        "id": "f8e4562380da1207",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 200,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "155d9f129ca26680",
+        "type": "subflow:5262f8dc212c0e9d",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "x": 620,
+        "y": 180,
+        "wires": [
+            [
+                "ef0297d6c22a8a59"
+            ]
+        ]
+    },
+    {
+        "id": "a1f888e3ea6d0556",
+        "type": "subflow:5262f8dc212c0e9d",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "x": 620,
+        "y": 500,
+        "wires": [
+            [
+                "f11c45c5118d5987"
+            ]
+        ]
+    },
+    {
+        "id": "5dad5178fd8937df",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 180,
+        "y": 500,
+        "wires": [
+            [
+                "807337ef3251542b"
+            ]
+        ]
+    },
+    {
+        "id": "807337ef3251542b",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Setar palavra",
+        "func": "msg.palavra = 'dificil'\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 500,
+        "wires": [
+            [
+                "a1f888e3ea6d0556"
+            ]
+        ]
+    },
+    {
+        "id": "f11c45c5118d5987",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 800,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "ef0297d6c22a8a59",
+        "type": "http response",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 790,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "196e4270b24e8e4b",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Setar palavra",
+        "func": "msg.palavra = msg.req.params.palavra\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "63027884ae568a6c",
+        "type": "change",
+        "z": "f6f2187d.f17ca8",
+        "name": "Setar palavra",
+        "rules": [
+            {
+                "t": "set",
+                "p": "palavra",
+                "pt": "msg",
+                "to": "req.params.palavra",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 370,
+        "y": 160,
+        "wires": [
+            [
+                "155d9f129ca26680",
+                "3eab76cff411f2f4"
+            ]
+        ]
+    },
+    {
+        "id": "3eab76cff411f2f4",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 300,
+        "wires": []
+    }
+]
