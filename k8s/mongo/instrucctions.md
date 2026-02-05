@@ -1,22 +1,22 @@
 ```sh
-    kubectl exec -it mongo-0 -- mongo
+    kubectl exec -it mongo-0 -- mongosh1
 ```
 
 ```sh
     rs.initiate({
-        _id: "rs0",
-        members: [
-            { _id: 0, host: "mongo-0.mongo-svc-h:27017" },
-        ]
+    _id: "rs0",
+    members: [
+        { _id: 0, host: "mongo-0.mongo:27017" },
+        { _id: 1, host: "mongo-1.mongo:27017" },
+        { _id: 2, host: "mongo-2.mongo:27017" }
+    ]
     })
 ```
 
 
-Note: The "rs0" name is arbitrary. You can use whatever you'd like, but you'll need to change it in the mongo-simple.yaml StatefulSet definition as well.
 
-Once you have initiated the Mongo ReplicaSet, you can add the remaining replicas by running the following commands in the mongo tool on the mongo-0.mongo-svc-h `Pod`:
-
+Show the status of the replica set:
 ```sh
-    rs.add("mongo-1.mongo-svc-h:27017")
-    rs.add("mongo-2.mongo-svc-h:27017")
+    rs.status()
 ```
+
