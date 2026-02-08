@@ -1,10 +1,17 @@
+##
+## OBS: Comentei as linhas relacionadas ao TLS e cert-manager para evitar erros ao testar os objetos k8s localmente via Kind.
+##      Para usar TLS, descomente as linhas relacionadas ao TLS e cert-manager.
+##
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-host
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt
-    ingress.kubernetes.io/ssl-redirect: "true"
+    # cert-manager.io/cluster-issuer: letsencrypt
+    # ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
@@ -34,18 +41,24 @@ spec:
                 name: kibana
                 port:
                   number: 5601
-    - host: alpaca.example.com
+    - host: example.local
       http:
         paths:
-          - backend:
+          - path: /nginx(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: nginx
+                port:
+                  number: 80
+          - path: /goserver(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
               service:
                 name: goserver-service
                 port:
                   number: 80
-            path: /
-            pathType: Prefix
-        
-  tls:
-    - hosts:
-        - umbelino.duckdns.org
-      secretName: letsencrypt-tls
+  # tls:
+  #   - hosts:
+  #       - umbelino.duckdns.org
+  #     secretName: letsencrypt-tls

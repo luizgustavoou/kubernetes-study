@@ -1,7 +1,22 @@
+###
+### OBS: Este arquivo configura um cluster Kubernetes local usando o Kind (Kubernetes in Docker).
+### Comentei os nós workers para economizar recursos durante testes locais e para funcionar o nginx ingress controller para evitar dele cair nos nós workers.
+###
+
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
   - role: control-plane
-  - role: worker
-  - role: worker
-  - role: worker
+    kubeadmConfigPatches:
+    - |
+      kind: InitConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    extraPortMappings:
+    - containerPort: 80
+      hostPort: 80
+      protocol: TCP
+  # - role: worker
+  # - role: worker
+  # - role: worker

@@ -1,0 +1,48 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: nginx-gateway-class
+spec:
+  controllerName: gateway.nginx.org/nginx-gateway-fabric
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: demo-gateway
+  namespace: local
+spec:
+  gatewayClassName: nginx-gateway-class
+  listeners:
+    - name: http-local
+      hostname: "*.local"
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: demo-app-route
+  namespace: local
+spec:
+  hostnames:
+  - nrteams.local
+  parentRefs:
+    - name: demo-gateway
+      namespace: local
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api/nrteams
+    backendRefs:    
+      - name: nrteams
+        port: 8080
+    filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /
